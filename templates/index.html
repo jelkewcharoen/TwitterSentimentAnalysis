@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<!-- HEAD -->
+
+<head>
+    <title>Tweets Sentiment Analysis</title>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:100,400,700,500,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link href="/assets/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/plugins/et-line/et-line.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/plugins/themify/themify.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/plugins/cubeportfolio/css/cubeportfolio.min.css" rel="stylesheet" type="text/css" />
+    <link href="/assets/css/global.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.css" />
+    <link href="/assets/css/cards-gallery.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/assets/plugins/jquery.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/map.js"></script>
+    <script src="https://code.highcharts.com/mapdata/custom/world.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.6/proj4.js"></script>
+    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/data.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/offline-exporting.js"></script>
+    <script src="https://code.highcharts.com/mapdata/countries/us/us-all.js"></script>
+    <!--<script src="/js/highmaps.js"></script>-->
+</head>
+<!-- END HEAD -->
+<!-- BEGIN BODY -->
+
+<body>
+    
+    <!-- WRAPPER -->
+    <div class="wrapper">
+        <!--========== PAGE CONTENT ==========-->
+        <div class="bg-color-sky-light">
+            <br>
+            <center>
+                <h2>Tweets Sentiment Analysis</h2>
+               
+            </center>
+        </div>
+        <div id="container" style="width:100%; height:400px;"></div>
+        <div id="container2" style="width:100%; height:400px;"></div>
+        <div id="container3" style="width:100%; height:400px;"></div>
+        <!--========== END PAGE CONTENT ==========-->
+    </div>
+    <!-- END WRAPPER -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        const chart = Highcharts.chart('container', {
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: 'Sentiment Value vs Time'
+            },
+            xAxis: {
+                categories: {{ timestamp|tojson }}
+            },
+            yAxis: {
+                title: {
+                    text: 'Sentiment'
+                }
+            },
+            series: [{
+                data: {{ sentiment|tojson }}
+            }]
+        });
+    });
+    </script>
+    <script>
+        var one = {{ sentiment_level[0]|tojson }};
+        var two = {{ sentiment_level[1]|tojson }};
+        var three = {{ sentiment_level[2]|tojson }};
+
+        document.addEventListener('DOMContentLoaded', function () {
+        const chart = Highcharts.chart('container2', {
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: 'Sentiment Value Analysis'
+            },
+            series: [{
+                data: [{
+                    name: '< 0',
+                    y: one
+                }, {
+                    name: '>=0 and <1',
+                    y: two
+                }, {
+                    name: '>=1',
+                    y:three
+                }]
+            }]
+        });
+    });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var H = Highcharts,
+            map = H.maps['custom/world'],
+            chart;
+
+            // Add series with state capital bubbles
+            Highcharts.getJSON('https://cdn.jsdelivr.net/gh/highcharts/highcharts@v7.0.0/samples/data/us-capitals.json', function (json) {
+            chart = Highcharts.mapChart('container3', {
+                title: {
+                text: 'Tweets Map'
+                },
+
+                tooltip: {
+                pointFormat: 
+                    'Lat: {point.lat}<br>' +
+                    'Lon: {point.lon}<br>' 
+                },
+
+                xAxis: {
+                crosshair: {
+                    zIndex: 5,
+                    dashStyle: 'dot',
+                    snap: false,
+                    color: 'gray'
+                }
+                },
+
+                yAxis: {
+                crosshair: {
+                    zIndex: 5,
+                    dashStyle: 'dot',
+                    snap: false,
+                    color: 'gray'
+                }
+                },
+
+                series: [{
+                name: 'Basemap',
+                mapData: map,
+                borderColor: '#606060',
+                nullColor: 'rgba(200, 200, 200, 0.2)',
+                showInLegend: false
+                }, {
+                name: 'Separators',
+                type: 'mapline',
+                data: H.geojson(map, 'mapline'),
+                color: '#101010',
+                enableMouseTracking: false,
+                showInLegend: false
+                }, {
+                type: 'mapbubble',
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.capital}'
+                },
+                name: 'Location',
+                data: {{location|tojson}},
+                maxSize: '12%',
+                color: H.getOptions().colors[0]
+                }]
+            });
+        });
+    });
+    </script>
+
+
+</body>
+<!-- END BODY -->
+
+</html>
